@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Product Table</title>
+    <style>
+        body {
+            display: flexbox;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        table {
+            width: 80%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #bdf182;
+        }
+
+        .custom-heading {
+            text-align: center;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="custom-heading "><h3>Product Table</h3></div>
+<div id="customTableContainer"></div>
+
+<script>
+    initializeProductTable();
+
+    function initializeProductTable() {
+        const apiUrl = "https://s3.amazonaws.com/open-to-cors/assignment.json";
+        const tableContainer = document.getElementById('customTableContainer');
+
+        fetchData(apiUrl)
+            .then(data => renderTable(data, tableContainer))
+            .catch(error => displayError(tableContainer, error));
+    }
+
+    function fetchData(url) {
+        return fetch(url)
+            .then(response => response.json());
+    }
+
+    function renderTable(data, container) {
+        if ('products' in data) {
+            const sortedProducts = Object.values(data['products']).sort((a, b) => b['popularity'] - a['popularity']);
+            const table = createTable(sortedProducts);
+            clearAndAppend(container, table);
+        } else {
+            container.innerHTML = 'Error: \'products\' key not found in the JSON data.';
+        }
+    }
+
+    function createTable(products) {
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <tr>
+                <th>Subcategory</th>
+                <th>Title</th>
+                <th>Price</th>
+                <th>Popularity</th>
+            </tr>
+        `;
+
+        products.forEach(product => {
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td>${product['subcategory']}</td>
+                <td>${product['title']}</td>
+                <td>${product['price']}</td>
+                <td>${product['popularity']}</td>
+            `;
+        });
+
+        return table;
+    }
+
+    function clearAndAppend(container, element) {
+        container.innerHTML = '';
+        container.appendChild(element);
+    }
+
+    function displayError(container, error) {
+        container.innerHTML = `Error: ${error.message}`;
+    }
+</script>
+
+</body>
+</html>
